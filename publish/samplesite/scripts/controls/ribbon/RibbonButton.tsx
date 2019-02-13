@@ -55,7 +55,7 @@ export default class RibbonButton extends React.Component<RibbonButtonProps, Rib
         );
     }
 
-    private onExecute(value?: string) {
+    private onExecute = (value?: string) => {
         const { button, plugin } = this.props;
         const editor = plugin.getEditor();
         this.onHideDropDown();
@@ -65,10 +65,12 @@ export default class RibbonButton extends React.Component<RibbonButtonProps, Rib
         }
 
         this.props.onClicked();
-    }
+    };
 
     private onShowDropDown = () => {
-        this.range = this.props.plugin.getEditor().getSelectionRange();
+        if (Browser.isSafari) {
+            this.range = this.props.plugin.getEditor().getSelectionRange();
+        }
 
         if (!this.props.button.preserveOnClickAway) {
             document.addEventListener('click', this.onHideDropDown);
