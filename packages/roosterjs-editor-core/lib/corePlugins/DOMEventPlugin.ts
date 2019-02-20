@@ -38,10 +38,13 @@ export default class DOMEventPlugin implements EditorPlugin {
             // [Browser.isIEOrEdge ? 'beforedeactivate' : 'blur']: () => editor.saveSelectionRange(),
             // focus: !this.disableRestoreSelectionOnFocus && (() => editor.restoreSavedRange()),
             focus: () => {
-                if (!this.disableRestoreSelectionOnFocus) {
-                    this.editor.select(this.range);
-                }
-                this.range = null;
+                let range = this.range;
+                this.editor.runAsync(() => {
+                    if (!this.disableRestoreSelectionOnFocus) {
+                        this.editor.select(range);
+                    }
+                });
+                this.setCachedRange(null);
             },
 
             // 3. Cut and drop management
@@ -73,7 +76,6 @@ export default class DOMEventPlugin implements EditorPlugin {
 
     public setCachedRange(range: Range) {
         this.range = range;
-        console.log(range);
     }
 
     private onNativeEvent = (e: UIEvent) => {
