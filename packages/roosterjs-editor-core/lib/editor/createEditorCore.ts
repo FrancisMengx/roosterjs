@@ -28,7 +28,7 @@ export default function createEditorCore(
         edit: new EditPlugin(),
         typeInContainer: new TypeInContainerPlugin(),
         mouseUp: new MouseUpPlugin(),
-        domEvent: new DOMEventPlugin(options.disableRestoreSelectionOnFocus),
+        domEvent: new DOMEventPlugin(options.disableRestoreSelectionOnFocus, contentDiv),
         firefoxTypeAfterLink: Browser.isFirefox && new FirefoxTypeAfterLink(),
     };
     let allPlugins: EditorPlugin[] = [
@@ -50,7 +50,7 @@ export default function createEditorCore(
         corePlugins,
         currentUndoSnapshot: null,
         customData: {},
-        cachedSelectionRange: null,
+        // cachedSelectionRange: null,
         plugins: allPlugins,
         eventHandlerPlugins: eventHandlerPlugins,
         api: createCoreApiMap(options.coreApiOverride),

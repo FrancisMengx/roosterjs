@@ -85,7 +85,7 @@ export default interface EditorCore {
     /**
      * Cached selection range of this editor
      */
-    cachedSelectionRange: Range;
+    // cachedSelectionRange: Range;
 }
 
 /**

@@ -531,20 +531,20 @@ export default class Editor {
     /**
      * Save the current selection in editor so that when focus again, the selection can be restored
      */
-    public saveSelectionRange() {
-        this.core.cachedSelectionRange = this.core.api.getSelectionRange(
-            this.core,
-            false /*tryGetFromCache*/
-        );
-    }
+    // public saveSelectionRange() {
+    //     this.core.cachedSelectionRange = this.core.api.getSelectionRange(
+    //         this.core,
+    //         false /*tryGetFromCache*/
+    //     );
+    // }
 
     /**
      * Restore the saved selection range and clear it
      */
-    public restoreSavedRange() {
-        this.select(this.core.cachedSelectionRange);
-        this.core.cachedSelectionRange = null;
-    }
+    // public restoreSavedRange() {
+    //     this.select(this.core.cachedSelectionRange);
+    //     this.core.cachedSelectionRange = null;
+    // }
 
     /**
      * Get current focused position. Return null if editor doesn't have focus at this time.

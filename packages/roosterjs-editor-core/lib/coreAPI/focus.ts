@@ -4,6 +4,7 @@ import { PositionType } from 'roosterjs-editor-types';
 
 const focus: Focus = (core: EditorCore) => {
     if (!core.api.hasFocus(core) || !core.api.getSelectionRange(core, false /*tryGetFromCache*/)) {
+        let cachedRange = core.corePlugins.domEvent.getCachedRange();
         // Focus (document.activeElement indicates) and selection are mostly in sync, but could be out of sync in some extreme cases.
         // i.e. if you programmatically change window selection to point to a non-focusable DOM element (i.e. tabindex=-1 etc.).
         // On Chrome/Firefox, it does not change document.activeElement. On Edge/IE, it change document.activeElement to be body
@@ -11,19 +12,19 @@ const focus: Focus = (core: EditorCore) => {
         // So here we always do a live selection pull on DOM and make it point in Editor. The pitfall is, the cursor could be reset
         // to very begin to of editor since we don't really have last saved selection (created on blur which does not fire in this case).
         // It should be better than the case you cannot type
-        if (!core.cachedSelectionRange || !core.api.select(core, core.cachedSelectionRange)) {
+        if (!cachedRange || !core.api.select(core, cachedRange)) {
             let node = getFirstLeafNode(core.contentDiv) || core.contentDiv;
             core.api.select(core, node, PositionType.Begin);
         }
     }
 
-    // remember to clear cachedSelectionRange
-    core.cachedSelectionRange = null;
-
     // This is more a fallback to ensure editor gets focus if it didn't manage to move focus to editor
     if (!core.api.hasFocus(core)) {
         core.contentDiv.focus();
     }
+
+    // remember to clear cachedSelectionRange
+    core.corePlugins.domEvent.setCachedRange(null);
 };
 
 export default focus;

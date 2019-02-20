@@ -60,7 +60,8 @@ const select: Select = (core: EditorCore, arg1: any, arg2?: any, arg3?: any, arg
             }
 
             if (!hasFocus(core)) {
-                core.cachedSelectionRange = range;
+                core.corePlugins.domEvent.setCachedRange(range);
+                // core.cachedSelectionRange = range;
             }
 
             return true;

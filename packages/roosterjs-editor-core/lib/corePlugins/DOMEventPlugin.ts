@@ -1,6 +1,5 @@
 import Editor from '../editor/Editor';
 import EditorPlugin from '../interfaces/EditorPlugin';
-import { Browser } from 'roosterjs-editor-dom';
 import { ChangeSource, PluginCompositionEvent, PluginEventType } from 'roosterjs-editor-types';
 
 /**
@@ -13,8 +12,9 @@ export default class DOMEventPlugin implements EditorPlugin {
     private editor: Editor;
     private inIme = false;
     private disposer: () => void;
+    private range: Range;
 
-    constructor(private disableRestoreSelectionOnFocus: boolean) {}
+    constructor(private disableRestoreSelectionOnFocus: boolean, private contentDiv: HTMLElement) {}
 
     getName() {
         return 'DOMEvent';
@@ -35,16 +35,25 @@ export default class DOMEventPlugin implements EditorPlugin {
             },
 
             // 2. Selection mangement
-            [Browser.isIEOrEdge ? 'beforedeactivate' : 'blur']: () => editor.saveSelectionRange(),
-            focus: !this.disableRestoreSelectionOnFocus && (() => editor.restoreSavedRange()),
+            // [Browser.isIEOrEdge ? 'beforedeactivate' : 'blur']: () => editor.saveSelectionRange(),
+            // focus: !this.disableRestoreSelectionOnFocus && (() => editor.restoreSavedRange()),
+            focus: () => {
+                if (!this.disableRestoreSelectionOnFocus) {
+                    this.editor.select(this.range);
+                }
+                this.range = null;
+            },
 
             // 3. Cut and drop management
             drop: this.onNativeEvent,
             cut: this.onNativeEvent,
         });
+
+        this.editor.getDocument().addEventListener('mousedown', this.onFocusOut);
     }
 
     dispose() {
+        this.editor.getDocument().removeEventListener('mousedown', this.onFocusOut);
         this.disposer();
         this.disposer = null;
         this.editor = null;
@@ -58,6 +67,15 @@ export default class DOMEventPlugin implements EditorPlugin {
         return this.inIme;
     }
 
+    public getCachedRange(): Range {
+        return this.range;
+    }
+
+    public setCachedRange(range: Range) {
+        this.range = range;
+        console.log(range);
+    }
+
     private onNativeEvent = (e: UIEvent) => {
         this.editor.runAsync(() => {
             this.editor.addUndoSnapshot(
@@ -65,5 +83,11 @@ export default class DOMEventPlugin implements EditorPlugin {
                 e.type == 'cut' ? ChangeSource.Cut : ChangeSource.Drop
             );
         });
+    };
+
+    private onFocusOut = (e: MouseEvent) => {
+        if (!this.editor.contains(e.srcElement) && e.srcElement != this.contentDiv && !this.range) {
+            this.setCachedRange(this.editor.getSelectionRange());
+        }
     };
 }
