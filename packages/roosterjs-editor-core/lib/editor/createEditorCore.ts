@@ -50,7 +50,7 @@ export default function createEditorCore(
         corePlugins,
         currentUndoSnapshot: null,
         customData: {},
-        cachedSelectionRange: null,
+        // cachedSelectionRange: null,
         plugins: allPlugins,
         eventHandlerPlugins: eventHandlerPlugins,
         api: createCoreApiMap(options.coreApiOverride),

@@ -15,7 +15,7 @@ const getSelectionRange: GetSelectionRange = (core: EditorCore, tryGetFromCache:
     }
 
     if (!result && tryGetFromCache) {
-        result = core.cachedSelectionRange;
+        result = core.corePlugins.domEvent.getCachedRange();
     }
 
     return result;

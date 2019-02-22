@@ -11,14 +11,15 @@ const focus: Focus = (core: EditorCore) => {
         // So here we always do a live selection pull on DOM and make it point in Editor. The pitfall is, the cursor could be reset
         // to very begin to of editor since we don't really have last saved selection (created on blur which does not fire in this case).
         // It should be better than the case you cannot type
-        if (!core.cachedSelectionRange || !core.api.select(core, core.cachedSelectionRange)) {
+        let cachedRange = core.corePlugins.domEvent.getCachedRange();
+        if (!cachedRange || !core.api.select(core, cachedRange)) {
             let node = getFirstLeafNode(core.contentDiv) || core.contentDiv;
             core.api.select(core, node, PositionType.Begin);
         }
     }
 
     // remember to clear cachedSelectionRange
-    core.cachedSelectionRange = null;
+    // core.cachedSelectionRange = null;
 
     // This is more a fallback to ensure editor gets focus if it didn't manage to move focus to editor
     if (!core.api.hasFocus(core)) {

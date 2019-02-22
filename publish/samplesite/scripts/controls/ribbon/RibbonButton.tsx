@@ -2,8 +2,8 @@ import * as React from 'react';
 import MainPaneBase from '../MainPaneBase';
 import RibbonButtonType, { DropDownRenderer } from './RibbonButtonType';
 import RibbonPlugin from './RibbonPlugin';
-import { Browser } from 'roosterjs-editor-dom';
 import { FormatState } from 'roosterjs-editor-types';
+// import { Browser } from 'roosterjs-editor-dom';
 
 const styles = require('./RibbonButton.scss');
 
@@ -19,7 +19,7 @@ export interface RibbonButtonState {
 }
 
 export default class RibbonButton extends React.Component<RibbonButtonProps, RibbonButtonState> {
-    private range: Range;
+    //    private range: Range;
 
     constructor(props: RibbonButtonProps) {
         super(props);
@@ -68,9 +68,9 @@ export default class RibbonButton extends React.Component<RibbonButtonProps, Rib
     };
 
     private onShowDropDown = () => {
-        if (Browser.isSafari) {
-            this.range = this.props.plugin.getEditor().getSelectionRange();
-        }
+        // if (Browser.isSafari) {
+        //     this.range = this.props.plugin.getEditor().getSelectionRange();
+        // }
 
         if (!this.props.button.preserveOnClickAway) {
             document.addEventListener('click', this.onHideDropDown);
@@ -81,9 +81,9 @@ export default class RibbonButton extends React.Component<RibbonButtonProps, Rib
     };
 
     private onHideDropDown = () => {
-        if (Browser.isSafari) {
-            this.props.plugin.getEditor().select(this.range);
-        }
+        // if (Browser.isSafari) {
+        //     this.props.plugin.getEditor().select(this.range);
+        // }
 
         document.removeEventListener('click', this.onHideDropDown);
         this.setState({

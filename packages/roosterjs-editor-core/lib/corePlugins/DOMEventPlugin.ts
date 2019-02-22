@@ -1,7 +1,12 @@
 import Editor from '../editor/Editor';
 import EditorPlugin from '../interfaces/EditorPlugin';
-import { Browser } from 'roosterjs-editor-dom';
-import { ChangeSource, PluginCompositionEvent, PluginEventType } from 'roosterjs-editor-types';
+// import { Browser } from 'roosterjs-editor-dom';
+import {
+    ChangeSource,
+    PluginCompositionEvent,
+    PluginEventType,
+    PluginEvent,
+} from 'roosterjs-editor-types';
 
 /**
  * DOMEventPlugin handles customized DOM events, including:
@@ -13,6 +18,8 @@ export default class DOMEventPlugin implements EditorPlugin {
     private editor: Editor;
     private inIme = false;
     private disposer: () => void;
+
+    private range: Range;
 
     constructor(private disableRestoreSelectionOnFocus: boolean) {}
 
@@ -35,8 +42,14 @@ export default class DOMEventPlugin implements EditorPlugin {
             },
 
             // 2. Selection mangement
-            [Browser.isIEOrEdge ? 'beforedeactivate' : 'blur']: () => editor.saveSelectionRange(),
-            focus: !this.disableRestoreSelectionOnFocus && (() => editor.restoreSavedRange()),
+            // [Browser.isIEOrEdge ? 'beforedeactivate' : 'blur']: () => editor.saveSelectionRange(),
+            focus:
+                !this.disableRestoreSelectionOnFocus &&
+                (() => {
+                    if (this.range) {
+                        this.editor.select(this.range);
+                    }
+                }),
 
             // 3. Cut and drop management
             drop: this.onNativeEvent,
@@ -50,12 +63,36 @@ export default class DOMEventPlugin implements EditorPlugin {
         this.editor = null;
     }
 
+    onPluginEvent(e: PluginEvent) {
+        if (
+            (e.eventType == PluginEventType.MouseUp ||
+                e.eventType == PluginEventType.KeyUp ||
+                e.eventType == PluginEventType.ContentChanged) &&
+            this.editor.hasFocus()
+        ) {
+            let selection = this.editor.getSelection();
+            if (selection.rangeCount > 0) {
+                try {
+                    this.setCachedRange(selection.getRangeAt(0));
+                } catch {}
+            }
+        }
+    }
+
     /**
      * Check if editor is in IME input sequence
      * @returns True if editor is in IME input sequence, otherwise false
      */
     public isInIME() {
         return this.inIme;
+    }
+
+    public getCachedRange() {
+        return this.range;
+    }
+
+    public setCachedRange(range: Range) {
+        this.range = range;
     }
 
     private onNativeEvent = (e: UIEvent) => {
