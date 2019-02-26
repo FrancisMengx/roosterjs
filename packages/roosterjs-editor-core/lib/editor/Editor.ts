@@ -543,11 +543,11 @@ export default class Editor {
     }
 
     /**
+     * @deprecated Use Editor.focus() instead
      * Restore the saved selection range and clear it
      */
     public restoreSavedRange() {
-        this.select(this.core.cachedSelectionRange);
-        this.core.cachedSelectionRange = null;
+        this.focus();
     }
 
     /**

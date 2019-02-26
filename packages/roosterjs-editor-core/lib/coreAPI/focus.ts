@@ -24,9 +24,6 @@ const focus: Focus = (core: EditorCore) => {
         }
     }
 
-    // remember to clear cachedSelectionRange
-    core.cachedSelectionRange = null;
-
     // This is more a fallback to ensure editor gets focus if it didn't manage to move focus to editor
     if (!core.api.hasFocus(core)) {
         core.contentDiv.focus();
