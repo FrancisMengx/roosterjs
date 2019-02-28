@@ -1,6 +1,6 @@
 import Editor from '../editor/Editor';
 import EditorPlugin from '../interfaces/EditorPlugin';
-// import { Browser } from 'roosterjs-editor-dom';
+import { Browser } from 'roosterjs-editor-dom';
 import {
     ChangeSource,
     PluginCompositionEvent,
@@ -40,7 +40,7 @@ export default class DOMEventPlugin implements EditorPlugin {
             },
 
             // 2. Selection mangement
-            // [Browser.isIEOrEdge ? 'beforedeactivate' : 'blur']: () => editor.saveSelectionRange(),
+            [Browser.isIEOrEdge ? 'beforedeactivate' : 'blur']: () => editor.saveSelectionRange(),
             focus: !this.disableRestoreSelectionOnFocus && (() => editor.focus()), // Core focus() to select the cached range if any
 
             // 3. Cut and drop management
