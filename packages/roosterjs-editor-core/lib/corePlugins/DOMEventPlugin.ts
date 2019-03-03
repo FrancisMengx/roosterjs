@@ -18,6 +18,7 @@ export default class DOMEventPlugin implements EditorPlugin {
     private editor: Editor;
     private inIme = false;
     private disposer: () => void;
+    public selectCachedRangeWhenFocus: boolean;
 
     constructor(private disableRestoreSelectionOnFocus: boolean) {}
 
@@ -40,8 +41,15 @@ export default class DOMEventPlugin implements EditorPlugin {
             },
 
             // 2. Selection mangement
-            [Browser.isIEOrEdge ? 'beforedeactivate' : 'blur']: () => editor.saveSelectionRange(),
-            focus: !this.disableRestoreSelectionOnFocus && (() => editor.focus()), // Core focus() to select the cached range if any
+            [Browser.isIEOrEdge ? 'beforedeactivate' : 'blur']: () => {
+                this.selectCachedRangeWhenFocus = true;
+            },
+            focus:
+                !this.disableRestoreSelectionOnFocus &&
+                (() => {
+                    editor.focus();
+                    this.selectCachedRangeWhenFocus = false;
+                }),
 
             // 3. Cut and drop management
             drop: this.onNativeEvent,
