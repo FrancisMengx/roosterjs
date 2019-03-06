@@ -1,7 +1,6 @@
 import createEditorCore from './createEditorCore';
 import EditorCore from '../interfaces/EditorCore';
 import EditorOptions from '../interfaces/EditorOptions';
-import { Browser, getRangeFromSelectionPath, getSelectionPath } from 'roosterjs-editor-dom';
 import { GenericContentEditFeature } from '../interfaces/ContentEditFeature';
 import {
     BlockElement,
@@ -22,19 +21,23 @@ import {
     Rect,
 } from 'roosterjs-editor-types';
 import {
-    PositionContentSearcher,
-    ContentTraverser,
-    Position,
+    Browser,
+    collapseNodes,
     contains,
+    ContentTraverser,
+    createRange,
+    findClosestElementAncestor,
     fromHtml,
     getBlockElementAtNode,
-    findClosestElementAncestor,
-    getPositionRect,
     getInlineElementAtNode,
+    getPositionRect,
+    getRangeFromSelectionPath,
+    getSelectionPath,
     getTagOfNode,
     isNodeEmpty,
+    Position,
+    PositionContentSearcher,
     queryElements,
-    collapseNodes,
     wrap,
 } from 'roosterjs-editor-dom';
 
@@ -94,16 +97,25 @@ export default class Editor {
             this.contenteditableChanged = true;
         }
 
-        // 8. Disable these operations for firefox since its behavior is usually wrong
+        // 8. Do proper change for browsers to disable some browser-specified behaviors.
         // Catch any possible exception since this should not block the initialization of editor
         try {
-            this.core.document.execCommand(DocumentCommand.EnableObjectResizing, false, <string>(
-                (<any>false)
-            ));
-            this.core.document.execCommand(DocumentCommand.EnableInlineTableEditing, false, <
-                string
-            >(<any>false));
-            this.core.document.execCommand(DocumentCommand.DefaultParagraphSeparator, false, 'div');
+            // Disable these object resizing for firefox since other browsers don't have these behaviors
+            if (Browser.isFirefox) {
+                this.core.document.execCommand(DocumentCommand.EnableObjectResizing, false, <
+                    string
+                >(<any>false));
+                this.core.document.execCommand(DocumentCommand.EnableInlineTableEditing, false, <
+                    string
+                >(<any>false));
+            } else if (Browser.isIE) {
+                // Change the default paragraph separater to DIV. This is mainly for IE since its default setting is P
+                this.core.document.execCommand(
+                    DocumentCommand.DefaultParagraphSeparator,
+                    false,
+                    'div'
+                );
+            }
         } catch (e) {}
 
         // 9. Let plugins know that we are ready
@@ -508,7 +520,8 @@ export default class Editor {
     ): boolean;
 
     public select(arg1: any, arg2?: any, arg3?: any, arg4?: any): boolean {
-        return this.core.api.select(this.core, arg1, arg2, arg3, arg4);
+        let range = arg1 instanceof Range ? arg1 : createRange(arg1, arg2, arg3, arg4);
+        return this.core.api.selectRange(this.core, range);
     }
 
     /**
@@ -764,9 +777,10 @@ export default class Editor {
 
     /**
      * Get a content traverser for the whole editor
+     * @param startNode The node to start from. If not passed, it will start from the beginning of the body
      */
-    public getBodyTraverser(): ContentTraverser {
-        return ContentTraverser.createBodyTraverser(this.core.contentDiv);
+    public getBodyTraverser(startNode?: Node): ContentTraverser {
+        return ContentTraverser.createBodyTraverser(this.core.contentDiv, startNode);
     }
 
     /**

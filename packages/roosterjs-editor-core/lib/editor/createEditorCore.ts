@@ -13,7 +13,7 @@ import getSelectionRange from '../coreAPI/getSelectionRange';
 import hasFocus from '../coreAPI/hasFocus';
 import insertNode from '../coreAPI/insertNode';
 import MouseUpPlugin from '../corePlugins/MouseUpPlugin';
-import select from '../coreAPI/select';
+import selectRange, { select } from '../coreAPI/selectRange';
 import triggerEvent from '../coreAPI/triggerEvent';
 import TypeInContainerPlugin from '../corePlugins/TypeInContainerPlugin';
 import Undo from '../undo/Undo';
@@ -90,6 +90,7 @@ function createCoreApiMap(map?: Partial<CoreApiMap>): CoreApiMap {
         hasFocus: map.hasFocus || hasFocus,
         insertNode: map.insertNode || insertNode,
         select: map.select || select,
+        selectRange: map.selectRange || selectRange,
         triggerEvent: map.triggerEvent || triggerEvent,
     };
 }
