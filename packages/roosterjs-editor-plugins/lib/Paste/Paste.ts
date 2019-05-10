@@ -135,14 +135,11 @@ export default class Paste implements EditorPlugin {
             }
         }
 
-        let event: BeforePasteEvent = {
-            eventType: PluginEventType.BeforePaste,
-            clipboardData: clipboardData,
-            fragment: fragment,
-            pasteOption: pasteOption,
-        };
-
-        this.editor.triggerEvent(event, true /*broadcast*/);
+        const event = this.editor.triggerEvent(
+            PluginEventType.BeforePaste,
+            { clipboardData, fragment, pasteOption },
+            true /*broadcast*/
+        );
         this.internalPaste(event);
     }
 

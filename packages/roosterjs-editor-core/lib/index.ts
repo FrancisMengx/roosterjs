@@ -26,7 +26,7 @@ export { default as UndoService } from './interfaces/UndoService';
 export { default as UndoSnapshotsService } from './interfaces/UndoSnapshotsService';
 
 // Classes
-export { default as Editor } from './editor/Editor';
+export { default as Editor, EventFromType, EventFromTypeWithoutType } from './editor/Editor';
 export { default as Undo } from './undo/Undo';
 
 // Core Plugins

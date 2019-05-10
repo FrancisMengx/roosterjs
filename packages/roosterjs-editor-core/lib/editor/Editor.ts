@@ -5,12 +5,12 @@ import EditorPlugin from '../interfaces/EditorPlugin';
 import EventLocker from '../interfaces/EventLocker';
 import { GenericContentEditFeature } from '../interfaces/ContentEditFeature';
 import {
+    BasePluginEvent,
     BlockElement,
     ChangeSource,
     ContentPosition,
     DefaultFormat,
     DocumentCommand,
-    ExtractContentEvent,
     InlineElement,
     InsertOption,
     NodePosition,
@@ -42,6 +42,16 @@ import {
     queryElements,
     wrap,
 } from 'roosterjs-editor-dom';
+
+export type EventFromType<
+    E extends PluginEvent,
+    T extends PluginEventType
+> = E extends BasePluginEvent<T> ? E : never;
+
+export type EventFromTypeWithoutType<
+    E extends PluginEvent,
+    T extends PluginEventType
+> = E extends BasePluginEvent<T> ? Pick<E, Exclude<keyof E, 'eventType'>> : never;
 
 /**
  * RoosterJs core editor class
@@ -121,12 +131,7 @@ export default class Editor {
         } catch (e) {}
 
         // 9. Let plugins know that we are ready
-        this.triggerEvent(
-            {
-                eventType: PluginEventType.EditorReady,
-            },
-            true /*broadcast*/
-        );
+        this.triggerEvent(PluginEventType.EditorReady, {}, true /*broadcast*/);
 
         // 10. Before give editor to user, make sure there is at least one DIV element to accept typing
         this.core.corePlugins.typeInContainer.ensureTypeInElement(
@@ -138,12 +143,7 @@ export default class Editor {
      * Dispose this editor, dispose all plugins and custom data
      */
     public dispose(): void {
-        this.triggerEvent(
-            {
-                eventType: PluginEventType.BeforeDispose,
-            },
-            true /*broadcast*/
-        );
+        this.triggerEvent(PluginEventType.BeforeDispose, {}, true /*broadcast*/);
 
         this.core.plugins.forEach(plugin => plugin.dispose());
         this.eventDisposers.forEach(disposer => disposer());
@@ -371,12 +371,11 @@ export default class Editor {
         }
 
         if (triggerExtractContentEvent) {
-            let extractContentEvent: ExtractContentEvent = {
-                eventType: PluginEventType.ExtractContent,
-                content: content,
-            };
-            this.triggerEvent(extractContentEvent, true /*broadcast*/);
-            content = extractContentEvent.content;
+            content = this.triggerEvent(
+                PluginEventType.ExtractContent,
+                { content: content },
+                true /*broadcast*/
+            ).content;
         }
 
         return content;
@@ -651,14 +650,36 @@ export default class Editor {
         }
     }
 
+    public triggerEvent<T extends PluginEventType>(
+        eventType: T,
+        data: EventFromTypeWithoutType<PluginEvent, T>,
+        broadcast?: boolean
+    ): EventFromType<PluginEvent, T>;
+
     /**
+     * @deprecated
      * Trigger an event to be dispatched to all plugins
      * @param pluginEvent The event object to trigger
      * @param broadcast indicates if the event needs to be dispatched to all plugins
      * True means to all, false means to allow exclusive handling from one plugin unless no one wants that
      */
-    public triggerEvent(pluginEvent: PluginEvent, broadcast: boolean = true) {
+    public triggerEvent<T extends PluginEvent>(pluginEvent: T, broadcast?: boolean): T;
+
+    public triggerEvent(
+        eventOrType: PluginEvent | PluginEventType,
+        broadcastOrData: any = true,
+        broadcast: boolean = true
+    ): PluginEvent {
+        let pluginEvent = <PluginEvent>eventOrType;
+
+        if (typeof eventOrType == 'number') {
+            pluginEvent = <PluginEvent>{ eventType: eventOrType, ...broadcastOrData };
+        } else {
+            broadcast = broadcastOrData;
+        }
+
         this.core.api.triggerEvent(this.core, pluginEvent, broadcast);
+        return pluginEvent;
     }
 
     /**
@@ -670,11 +691,10 @@ export default class Editor {
         source: ChangeSource | string = ChangeSource.SetContent,
         data?: any
     ) {
-        this.triggerEvent({
-            eventType: PluginEventType.ContentChanged,
-            source: source,
-            data: data,
-        } as PluginEvent);
+        this.triggerEvent(PluginEventType.ContentChanged, {
+            source,
+            data,
+        });
     }
 
     public lockEvent(

@@ -1,7 +1,7 @@
 import Editor from '../editor/Editor';
 import EditorPlugin from '../interfaces/EditorPlugin';
 import { Browser } from 'roosterjs-editor-dom';
-import { ChangeSource, PluginCompositionEvent, PluginEventType } from 'roosterjs-editor-types';
+import { ChangeSource, PluginEventType } from 'roosterjs-editor-types';
 
 /**
  * DOMEventPlugin handles customized DOM events, including:
@@ -28,8 +28,7 @@ export default class DOMEventPlugin implements EditorPlugin {
             compositionstart: () => (this.inIme = true),
             compositionend: (e: CompositionEvent) => {
                 this.inIme = false;
-                editor.triggerEvent(<PluginCompositionEvent>{
-                    eventType: PluginEventType.CompositionEnd,
+                editor.triggerEvent(PluginEventType.CompositionEnd, {
                     rawEvent: e,
                 });
             },
